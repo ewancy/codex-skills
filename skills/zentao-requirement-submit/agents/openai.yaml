@@ -1,6 +1,6 @@
 interface:
   display_name: "禅道需求提交"
-  short_description: "将需求文档提交为禅道需求并上传 .md 附件"
-  default_prompt: "Use $zentao-requirement-submit to submit the current requirement to ZenTao with project, version, source, assignee, the Markdown requirement document attachment, and verification."
+  short_description: "将需求文档提交为禅道需求，上传必要附件并清理旧附件"
+  default_prompt: "Use $zentao-requirement-submit to submit the current requirement to ZenTao with project, version, source, assignee, the latest Markdown requirement document attachment, default inline images via uploaded webPath attachments, and cleanup of obsolete or duplicate attachments."
 policy:
   allow_implicit_invocation: true

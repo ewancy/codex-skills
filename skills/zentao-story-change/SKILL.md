@@ -33,7 +33,7 @@ Collect or infer:
 1. Read source PRD and confirm it is the intended latest version.
 2. Run `zentao whoami` and `zentao story get --id <id> --json` to confirm access and current story metadata.
 3. Convert the PRD Markdown to HTML and submit through ZenTao's `story change` form, not just REST `PUT`, so ZenTao creates a real story version/change record.
-4. Preserve story identity: title, product/module/execution links, assignee, and attachments unless the user asks to change them.
+4. Preserve story identity: title, product/module/execution links and assignee. Preserve unrelated attachments, but clean old/duplicate/unreferenced generated attachments after the latest PRD and images are synced.
 5. Update `spec` from the PRD. Update `verify` with concise 注意事项. Keep `customDemandSpec` unchanged unless the user provides a new background field.
 6. Re-read the story with `zentao story get --id <id> --json` and verify key phrases from the new PRD exist in `spec` and 注意事项 exist in `verify`.
 7. Final response: include story link, status, version, execution link status, and what was changed. Never print credentials, cookies, or tokens.
@@ -54,13 +54,25 @@ The changed `spec` must preserve the PRD's visual structure in ZenTao. Do not su
 
 When syncing a local PRD to ZenTao, the ZenTao `spec` must not contain local prototype paths.
 
-中文说明：本地需求文档可以记录绝对路径方便当前电脑维护，但同步到禅道时，正文必须面向所有研发/测试可读；原型统一通过禅道附件查看。
+中文说明：本地需求文档可以记录绝对路径方便当前电脑维护，但同步到禅道时，正文必须面向所有研发/测试可读；默认同步最新需求 `.md` 源文件。如果 PRD 有页面截图，默认禅道正文直接显示图片：上传图片附件，并用禅道附件 `webPath` 写入 `<img>`。原型 ZIP、知识库附件仍不上传，除非用户明确要求。
 
-- Replace local prototype references with wording like `原型文件：查看禅道附件 <附件名>.zip`.
+- Replace local prototype references with wording like `需求文档：查看禅道附件 <需求说明>.md`.
 - Do not keep `/Users/...`, `/home/...`, `C:\...`, `file://...`, `localhost`, or `127.0.0.1` in ZenTao `spec`.
-- If the PRD embeds a local flowchart/image path, replace it with `交互流程图查看禅道附件 <附件名>.zip`.
-- Upload a fresh ZIP attachment when prototype files changed, and use a versioned attachment title when helpful, e.g. `需求名原型-v1.5`.
+- If the PRD embeds a local flowchart/image path, default behavior is to show it directly in ZenTao正文: upload the image attachment, read `files[].webPath`, and write `<img src="https://<禅道域名><webPath>" ... />` into `spec`.
+- Upload or replace only the latest `.md` requirement source by default; ZenTao may display `.md` as `.txt`, but the content/title should still identify the requirement source. After syncing, delete old requirement-source attachments with the same purpose/version lineage unless the user asks to keep them.
+- Do not wrap `<img>` with `<a>` because this ZenTao editor rewrites image links to `/data/upload/...`, which may download on click. For large preview, add a separate `m=file&f=download&fileID=<fileID>&mouse=left` link below the image.
 - After changing a story, verify the ZenTao `spec` has no local path and still references the uploaded attachment.
+
+## Attachment Cleanup Rules / 附件清理规则
+
+中文说明：变更已有需求时，经常会多次上传 `.md` 和截图。每次变更完成后都要把附件列表整理干净，只保留当前正文需要的附件。
+
+- 先计算保留清单：最新需求说明 `.md`、正文 `<img src=...>` 引用的图片、正文“点击查看大图”引用的 fileID、用户明确要求保留的其他附件。
+- 删除清单包括：旧版需求源文件、旧版截图、重复上传但未被正文引用的图片、临时调试附件、已经被最新正文替代的附件。
+- 不删除无法判断用途的历史附件；如附件不是本次需求生成且用途不明，先向用户确认。
+- 默认正文需要展示 PRD 页面截图；这些图片附件必须保留，否则图片会失效。只能删除未被最新正文引用的旧图片。
+- 删除方式：登录后请求 `/index.php?m=file&f=delete&fileID=<id>&confirm=yes`；删除后重新 `zentao story get --id <id> --json` 复核 `files`。
+- 最终回复必须说明附件清理结果；如没有权限删除或删除失败，明确列出残留附件和原因。
 
 ## Bundled Script / 内置脚本
 
@@ -117,18 +129,22 @@ After submitting, verify:
 - `executions` still contains the target execution if the original story was linked.
 - `spec` contains latest PRD anchors, such as new section names or version record.
 - `spec` preserves formatting: no whole-document `<pre>`, Markdown tables become HTML tables, and raw `| --- |` separators are absent.
-- `spec` references prototypes through ZenTao attachments and does not contain local paths or temporary local URLs.
+- `spec` references the `.md` requirement attachment by default and does not contain local paths, temporary local URLs, or download-style image links.
 - `verify` contains `影响范围` and `需求边界`.
-- Existing files are still present unless intentionally changed.
+- Attachment list is clean: only the latest `.md`, currently referenced images, and user-requested extras remain; old/duplicate/unreferenced generated attachments are deleted, while unrelated unknown attachments are preserved unless confirmed removable.
 
 ## Failure Handling / 异常处理
 
 - If REST `PUT` appears to update but `version` does not increase or `spec` remains old, use the change form script.
 - If the story content displays Markdown tables as plain text, rerun the change script and validate `<table>` exists in `spec`.
-- If the story content contains local prototype paths, replace them with “查看禅道附件” wording and upload the latest ZIP attachment.
+- If the story content contains local prototype paths, replace them with “查看需求文档附件” wording and upload only the latest `.md` requirement source unless the user explicitly asks for extra attachments.
 - If the change page says the story was edited by someone else, re-fetch the page and retry once with the latest `lastEditedDate`; do not overwrite if content changed unexpectedly.
-- If HTML attachments need updating, zip HTML files first and use the existing `zentao-requirement-submit` attachment workflow.
+- If HTML prototype attachments need updating, only zip and upload HTML files when the user explicitly requests uploading the prototype package.
+- If duplicate or obsolete attachments remain after a change, delete them with `m=file&f=delete&fileID=<id>&confirm=yes`, then re-read the story to verify the attachment list.
 
+
+- Current ZenTao strips `data:image/png;base64` from story spec, so inline images without file records are not reliable. Default behavior is to show screenshots directly in ZenTao正文 by uploading image attachments and using their `webPath` in width-constrained `<img>` thumbnails plus separate `mouse=left` preview links.
+- Avoid CSS background thumbnails for PRD screenshots because ZenTao may strip `background-size`, causing cropped/incomplete display.
 
 ## Skill Writing Note / 技能编写要求
 
