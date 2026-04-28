@@ -1,0 +1,3 @@
+display_name: Requirement PRD Writer
+short_description: Draft Chinese PRDs after knowledge-base preflight and方案 confirmation.
+default_prompt: Prepare a Chinese requirement writing方案 after finding, creating, or updating the related requirement knowledge base; wait for confirmation before generating the formal PRD.

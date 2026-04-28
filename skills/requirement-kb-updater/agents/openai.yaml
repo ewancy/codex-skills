@@ -1,0 +1,3 @@
+display_name: Requirement KB Updater
+short_description: Update KBs from docs, ZenTao, and feedback.
+default_prompt: Update an existing requirement knowledge base from local requirement documents, ZenTao changes, screenshots, prototypes, or user feedback, and maintain a version change log.

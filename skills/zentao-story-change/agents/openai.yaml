@@ -1,0 +1,4 @@
+interface:
+  display_name: "ZenTao Story Change"
+  short_description: "Update existing ZenTao stories from local PRDs."
+  default_prompt: "Update an existing ZenTao story from the latest local PRD, preserving links and verifying the saved content."

@@ -1,0 +1,3 @@
+display_name: HTML Interactive Prototype
+short_description: Build current-page-based interactive HTML demos with silent backend capture when needed.
+default_prompt: Create a self-contained interactive HTML prototype from a PRD, knowledge base, screenshots, or interaction rules; first reuse current page references, use silent Playwright capture when available, and ask for references if missing before creating a new design.

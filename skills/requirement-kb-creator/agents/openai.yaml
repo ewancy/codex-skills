@@ -1,0 +1,3 @@
+display_name: Requirement KB Creator
+short_description: Create requirement KBs with mandatory ZenTao history lookup.
+default_prompt: Create a requirement knowledge base from ZenTao records, local documents, screenshots, prototypes, or user notes; before creating any new KB, query ZenTao history or record an explicit skip/failure reason.

@@ -1,0 +1,3 @@
+display_name: 禅道未下单需求查询
+short_description: 支持按链接、版本号或当前账号查询禅道未下单需求。
+default_prompt: 请查询当前禅道账号的未下单需求，可指定需求池链接或版本号，并输出需求清单。
