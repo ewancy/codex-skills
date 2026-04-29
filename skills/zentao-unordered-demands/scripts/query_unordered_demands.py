@@ -308,6 +308,7 @@ def main() -> int:
     ap.add_argument("--version", help="Version id, e.g. 412. Overrides or supplies the version query parameter.")
     ap.add_argument("--project", help="Optional projectSearch value. Use empty string to clear when your shell supports it.")
     ap.add_argument("--single-page", action="store_true", help="Do not auto-scan versions when neither --url nor --version is provided.")
+    ap.add_argument("--version-limit", type=int, default=10, help="Limit automatic cross-version scanning to the newest N visible versions. Default: 10; use 0 for all versions.")
     ap.add_argument("--all-accounts", action="store_true", help="Do not force pm=current account; query all PMs allowed by the page/search filters.")
     ap.add_argument("--config", help="Path to zentao config.toml. Defaults to ~/.config/zentao/config.toml.")
     ap.add_argument("--json", action="store_true", help="Output structured JSON.")
@@ -333,6 +334,8 @@ def main() -> int:
         # A blank version page is not an "all versions" query in this ZenTao customization.
         # Discover visible version filters, query each version, then deduplicate demand IDs.
         versions = extract_versions(page_html)
+        if args.version_limit > 0:
+            versions = versions[:args.version_limit]
         rows = []
         seen_ids = set()
         for version in versions:

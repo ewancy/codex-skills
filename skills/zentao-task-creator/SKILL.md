@@ -104,13 +104,53 @@ description: Create ZenTao/禅道 main tasks and role-based subtasks directly fr
   - 父任务：主任务 ID
   - 截止：按工作量比前后端提前 1-2 天，并避开周天
 
+
+## 快速执行优先路径
+
+中文说明：为缩短下任务时间，常规创建优先使用脚本 `scripts/create_story_tasks_fast.mjs`，不要再手写临时脚本逐个创建、逐个回查。只有脚本报错或需要非常规字段时，才回退到后面的手工表单流程。
+
+推荐命令：
+
+```bash
+node /Users/bsg/.codex/skills/zentao-task-creator/scripts/create_story_tasks_fast.mjs --story <storyID> --backend <account> [--with-art] [--deadline YYYY-MM-DD] [--pool-id <poolID>]
+```
+
+脚本会一次性完成：
+
+- 登录并读取 story、执行、模块、来源、类别和标题。
+- 从执行任务列表查重；同名任务存在时复用，不重复创建。
+- 从创建页校验负责人账号是否存在；`zentao users list` 无权限时不再额外查询用户列表。
+- 先创建/复用主任务，随后创建后端、前端、测试，以及可选美术子任务，并挂到主任务下。
+- 自动避开周天：研发截止=测试截止提前 2 天，美术截止=研发截止提前 2 天。
+- 可选用 `--pool-id` 将需求池记录关联到主任务，避免需求池仍显示未下单。
+- 最后输出一份 JSON 回查结果，包含任务 ID、父任务、类型、负责人、截止日期和状态。
+
+平台部常用示例：
+
+```bash
+node /Users/bsg/.codex/skills/zentao-task-creator/scripts/create_story_tasks_fast.mjs --story 8964 --backend yuh --with-art --pool-id 2659
+```
+
+快速路径注意事项：
+
+- 平台部仍必须先确认后端是余浩 `yuh` 还是陈益，再传 `--backend`；不得默认猜。
+- 默认平台部前端 `zhangxiaohui`、测试 `linwq`、美术 `zhangqw`；如果用户指定其他人，需先确认脚本是否支持，必要时回退手工流程。
+- 不要提交 `keywords`、`files[]`、`labels[]`、空 `tag[]` 等任务表不稳定字段，避免 `Unknown column` 或字段类型错误。
+- 脚本成功后无需再逐个运行 `zentao task get`；只在输出异常、用户要求明细复核、或字段看起来不一致时再逐个回查。
+
 ## 工作流程
+
+### 0. 优先尝试快速脚本
+
+- 信息齐全时直接运行“快速执行优先路径”的脚本；脚本输出即为最终回查依据。
+- 脚本缺参数时只问必要问题：平台部后端负责人、美术是否需要、非平台部截止日期。
+- 脚本失败时再进入下面的手工流程，并复用脚本已创建成功的任务，避免重复。
 
 ### 1. 读取需求和执行
 
 ```bash
 zentao story get --id <storyID> --json
-zentao tasks list --execution <executionID> --json
+zentao tasks list --execution <executionID> --limit 500 --json
 ```
 
 - 确认 story 标题、状态、产品、关联 execution。
@@ -175,7 +215,7 @@ zentao tasks list --execution <executionID> --json
 
 ```bash
 zentao task get --id <taskID> --json
-zentao tasks list --execution <executionID> --json
+zentao tasks list --execution <executionID> --limit 500 --json
 ```
 
 验证项：
