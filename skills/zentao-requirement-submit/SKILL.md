@@ -1,6 +1,6 @@
 ---
 name: zentao-requirement-submit
-description: Submit product requirements to ZenTao/禅道 as stories/demands from local PRD Markdown files. Use when the user asks to 提交需求到禅道, 创建/更新禅道需求, 关联项目/版本/执行, 设置需求来源/模块/指派人, 上传需求文档附件, or attach a local Markdown requirement document to a ZenTao story.
+description: Submit product requirements to ZenTao/禅道 as stories/demands from local PRD Markdown files, and upload paired HTML prototypes directly as .html/.htm attachments instead of ZIP. Use when the user asks to 提交需求到禅道, 创建/更新禅道需求, 关联项目/版本/执行, 设置需求来源/模块/指派人, 上传需求文档附件/HTML原型附件, or attach a local Markdown requirement document and prototype HTML to a ZenTao story.
 ---
 
 # 禅道需求提交流程
@@ -30,7 +30,7 @@ description: Submit product requirements to ZenTao/禅道 as stories/demands fro
 
 - **需求正文**：优先使用本地 PRD/需求说明 `.md`；没有文件时使用用户消息整理。
 - **禅道对象**：产品/项目名称、版本/执行名称、模块、需求来源、指派人。
-- **附件**：默认上传最新需求说明 `.md` 源文件；如 PRD 有页面截图，默认要求禅道正文直接显示图片，需要上传图片附件并使用禅道附件 `webPath` 写入 `<img>`；原型 ZIP、知识库、PDF 等其他补充材料不上传，除非用户明确要求。提交/变更后需清理旧版、重复或正文不再引用的附件。
+- **附件**：默认上传最新需求说明 `.md` 源文件；如当前功能点目录存在配套 `.html/.htm` 交互原型，默认作为普通 HTML 附件直接上传，不压缩成 ZIP；如 PRD 有页面截图，默认要求禅道正文直接显示图片，需要上传图片附件并使用禅道附件 `webPath` 写入 `<img>`；知识库、PDF 等其他补充材料不上传，除非用户明确要求。提交/变更后需清理旧版、重复或正文不再引用的附件。
 - **注意事项模板**：若用户未另给模板，按本技能的标准模板填写。
 - **目标行为**：创建新需求、更新已有需求、补充附件、关联版本/执行、更新注意事项等。
 
@@ -75,7 +75,7 @@ description: Submit product requirements to ZenTao/禅道 as stories/demands fro
 
 中文说明：禅道正文需要显示图片时，图片必须作为附件存在；但旧版需求源文件、旧截图、重复上传的图片、已不再被正文引用的附件会干扰评审，提交或变更后必须清理。
 
-- 提交前先定义本次应保留附件清单：最新 `.md` 需求源文件、正文 `<img>` 正在引用的图片、用户明确要求保留的原型/PDF/其他补充附件。
+- 提交前先定义本次应保留附件清单：最新 `.md` 需求源文件、配套 `.html/.htm` 交互原型附件、正文 `<img>` 正在引用的图片、用户明确要求保留的 PDF/其他补充附件。
 - 默认删除旧版同名/同类型附件：旧 `需求说明源文件-vX`、旧截图 `*-vX`、重复上传但未被正文引用的图片、历史调试附件。
 - 不删除与本次需求无关且无法判断用途的附件；如无法确认是否可删，先向用户确认。
 - 删除附件必须在最终正文回写后执行，避免误删正文仍在引用的图片。
@@ -87,12 +87,13 @@ description: Submit product requirements to ZenTao/禅道 as stories/demands fro
 
 写入禅道的 `spec` 不允许出现本机文件路径或仅本机可访问的原型地址。
 
-中文说明：本地 PRD 可以保存绝对路径方便当前电脑打开，但提交到禅道后，研发/测试无法访问 `/Users/...`、`C:\...`、`file://...` 这类路径。因此禅道正文中统一写“查看禅道附件”，附件默认上传需求说明 `.md` 源文件，不再把本地 HTML 原型打包成 ZIP。
+中文说明：本地 PRD 可以保存绝对路径方便当前电脑打开，但提交到禅道后，研发/测试无法访问 `/Users/...`、`C:\...`、`file://...` 这类路径。因此禅道正文中统一写“查看禅道附件”。附件默认上传需求说明 `.md` 源文件；如有配套 HTML 原型，直接上传 `.html/.htm` 原文件，不再打包成 ZIP。
 
 - 提交前确认需求说明 `.md` 文件是最新版本，并把它作为禅道附件上传；如已有旧版 `.md` 附件，本次提交完成后清理旧版，只保留最新源文件。
 - 禅道正文中的文档引用写成：`需求文档：查看禅道附件 <需求说明>.md`。
-- 如果正文有“交互流程图”“客户端原型”“后台原型”等本地 HTML 或本地图片路径说明，提交前默认改成查看需求文档附件，不嵌入本地路径；只有用户明确要求时才上传对应补充附件。
-- 不主动压缩或上传本地 `.html/.htm` 原型；只有用户明确要求上传原型包时，才按用户要求另行处理。
+- 如有配套 HTML 原型，禅道正文中的原型引用写成：`交互原型：查看禅道附件 <原型文件名>.html`；不要写本机绝对路径、`file://` 或本地 HTTP 地址。
+- 如果正文有“交互流程图”“客户端原型”“后台原型”等本地 HTML 路径说明，提交前默认改成查看禅道附件中的 `.html/.htm` 原型；本地图片路径仍按图片规则上传并回写 `<img>` 或改成查看附件。
+- 禁止把 HTML 原型压缩成 ZIP 上传；除非用户明确要求 zip，否则必须直接上传 `.html/.htm` 文件。
 - 提交到禅道前清理 `spec` 中的本地路径模式：`/Users/`、`/home/`、`C:\`、`file://`、`localhost`、`127.0.0.1`。
 - 如果提交后发现禅道正文仍包含本机路径，必须立即变更需求正文并重新上传最新 `.md` 附件。
 
@@ -121,10 +122,10 @@ description: Submit product requirements to ZenTao/禅道 as stories/demands fro
 ### 1. 校验登录与本地文件
 
 - 运行 `zentao whoami` 确认当前账号。
-- 用 `ls`/`rg --files` 确认 PRD、知识库、需求说明 `.md` 和补充附件路径存在。
-- 默认不处理、不压缩、不上传本地 HTML 原型；如目录中存在 `.html/.htm`，仅用于理解需求，不作为禅道附件。
-- 如 PRD 中包含本地原型路径，提交禅道前替换为“需求文档：查看禅道附件 `<需求说明>.md`”或“查看禅道附件 `<图片文件名>`”。
-- 确认将要上传的 `.md` 附件文件名与正文引用一致。
+- 用 `ls`/`rg --files` 确认 PRD、知识库、需求说明 `.md`、配套 `.html/.htm` 原型和补充附件路径存在。
+- 默认查找当前功能点目录下与本需求配套的 `.html/.htm` 原型文件；如存在则直接作为禅道附件上传，不压缩、不改名为 zip。
+- 如 PRD 中包含本地原型路径，提交禅道前替换为“交互原型：查看禅道附件 `<原型文件名>.html`”；如是图片路径则按图片附件规则处理。
+- 确认将要上传的 `.md` 和 `.html/.htm` 附件文件名与正文引用一致。
 
 ### 1.1 生成禅道提交包
 
@@ -134,10 +135,11 @@ description: Submit product requirements to ZenTao/禅道 as stories/demands fro
   - 转换后的 `spec.html`。
   - 转换后的 `verify.html`。
   - PRD 源文件 `.md`（作为默认禅道附件）。
+  - 配套 `.html/.htm` 交互原型文件（作为默认禅道附件，直接上传原文件，不压缩成 ZIP）。
   - PRD 中用于正文展示的页面截图/流程图图片附件；其他补充附件仍需用户明确要求。
 - Markdown PRD 转 HTML 时：
   - 标题、列表、表格必须转为真实 HTML。
-  - 本地原型或文档引用统一写“查看禅道附件 `<需求说明>.md`”，不再引用原型 ZIP。
+  - 本地文档引用统一写“查看禅道附件 `<需求说明>.md`”；本地 HTML 原型引用统一写“查看禅道附件 `<原型文件名>.html`”，不再引用或生成原型 ZIP。
   - 图片默认作为禅道正文展示资源上传；先临时写“查看禅道附件 `<图片文件名>`”，上传后用 `webPath` 直连地址回写 `<img>`。
 - 提交前本地自检 `spec.html`：不能包含 `/Users/`、`/home/`、`C:\`、`file://`、`localhost`、`127.0.0.1`、`| --- |`、`<pre>`。
 
@@ -162,7 +164,7 @@ description: Submit product requirements to ZenTao/禅道 as stories/demands fro
 - 产品 ID、模块 ID、标题、来源、类别、优先级、需求描述、注意事项都要写入。
 - 如果接口提示“类别不能为空”，补充 `category=feature` 后再创建。
 - 需求描述写入前必须先把 Markdown 转成 HTML；标题、列表、表格和图片都必须是真实 HTML 结构，表格使用 `<table>`，图片使用 `<img>` 或“查看禅道附件”，不要把 PRD 作为纯文本或 `<pre>` 写入。
-- 写入 `spec` 前必须清理本地原型路径；禅道正文只保留“查看禅道附件”的 `.md` 引用，以及通过 `webPath` 写入的图片 `<img>`。
+- 写入 `spec` 前必须清理本地原型路径；禅道正文只保留“查看禅道附件”的 `.md` 文档引用、`.html/.htm` 原型附件引用，以及通过 `webPath` 写入的图片 `<img>`。
 - 创建后如果 story 是草稿或未指派，用编辑表单补齐 `status=active`、`assignedTo=<account>`、`keywords` 等。
 - 禅道接口不支持某字段时，读取对应编辑页，用传统表单接口提交。
 
@@ -178,12 +180,13 @@ description: Submit product requirements to ZenTao/禅道 as stories/demands fro
 
 ### 5. 上传附件
 
-- 默认只上传需求说明 `.md` 源文件作为需求附件；不再把本地 HTML 原型压缩成 ZIP 上传。
-- 截图、流程图、PDF、知识库等补充材料只有在用户明确要求上传时，才作为独立附件上传。
+- 默认上传需求说明 `.md` 源文件作为需求附件。
+- 默认上传当前功能点目录下与本需求配套的 `.html/.htm` 交互原型，必须直接上传 HTML 原文件，不压缩成 ZIP。若存在多个 HTML，优先上传文件名与需求/原型语义最匹配的文件；无法判断时先向用户确认。
+- 截图、流程图、PDF、知识库等补充材料只有在用户明确要求上传时，才作为独立附件上传；但正文需要显示的截图/流程图仍按图片内嵌规则上传。
 - 优先在 story 变更页或编辑页上传附件，使用字段：`labels[]` 和 `files[]`。
 - 上传后用 `zentao story get --id <id> --json` 核对 `files` 不为空，确认附件标题和扩展名正确；如存在旧版或重复附件，按“附件清理规则”删除。
 - 如果 `/api.php/v1/files` 上传返回通用 `error`，不要反复尝试同一接口；改用 story 变更页 `multipart/form-data` 上传，字段为 `labels[]` 与 `files[]`。
-- 上传 PRD 源文件时，禅道可能把 `.md` 识别为 `.txt`，只要附件内容和标题正确即可在最终说明中提示。
+- 上传 PRD 源文件时，禅道可能把 `.md` 识别为 `.txt`，只要附件内容和标题正确即可在最终说明中提示。上传 HTML 原型时需确认附件标题保留 `.html/.htm` 文件名；如禅道识别扩展名异常但文件标题正确，最终回复中说明。
 
 ### 5.1 图片内嵌回写
 
@@ -212,12 +215,12 @@ description: Submit product requirements to ZenTao/禅道 as stories/demands fro
 - `product/module/source/category/pri` 符合用户要求。
 - `assignedTo` 为目标账号。
 - `executions` 包含目标版本/执行。
-- `files` 默认只保留本次最新需求说明 `.md` 附件，以及正文正在引用的最新图片附件；旧版、重复、未引用附件需删除。
+- `files` 默认只保留本次最新需求说明 `.md` 附件、配套 `.html/.htm` 原型附件，以及正文正在引用的最新图片附件；旧版、重复、未引用附件需删除。
 - `verify` 已按注意事项标准模板填写。
 - `spec` 格式正确：标题/列表/表格/图片为 HTML 结构，Markdown 表格没有退化为纯文本，Markdown 图片没有保留本地路径。
-- `spec` 不包含本机路径或临时服务地址，例如 `/Users/`、`file://`、`localhost`、`127.0.0.1`；本地原型或文档引用应指向 `.md` 禅道附件。
+- `spec` 不包含本机路径或临时服务地址，例如 `/Users/`、`file://`、`localhost`、`127.0.0.1`；本地文档引用应指向 `.md` 禅道附件，本地 HTML 原型引用应指向 `.html/.htm` 禅道附件。
 - 复核 `spec` 中 `<img>` 数量与核心截图数量一致，图片显示使用禅道附件 `webPath`；查看大图链接必须使用 `mouse=left` 预览地址；复核正文中不应存在 `<a><img>` 结构，避免禅道改写成 `/data/upload` 下载链接。
-- 附件列表已清理：无旧版重复需求源文件、无未引用旧截图；正文显示图片所依赖的图片附件除外。
+- 附件列表已清理：无旧版重复需求源文件、无旧版重复 HTML 原型、无未引用旧截图；正文显示图片所依赖的图片附件和本次配套 HTML 原型附件除外。
 - 最终回复只给结果、链接、关键字段、附件清理结果和未完成项；不要输出密码、Token、Cookie。
 
 ## 常见问题处理
@@ -231,8 +234,9 @@ description: Submit product requirements to ZenTao/禅道 as stories/demands fro
 - **REST 回写图片不生效**：改用 story 变更页提交 `spec`，保存后用 `zentao story get` 校验 `<img>` 是否存在。
 - **注意事项被覆盖**：重新读取最新变更页，保留最新 `spec`，只替换 `verify`。
 - **正文格式退化为纯文本**：不要接受 `<pre>` 包裹的 PRD；用 Markdown-to-HTML 转换后重新提交，复核 `<table>` 存在且 `| --- |` 不存在。
-- **禅道正文出现本地原型路径**：把路径替换为“查看禅道附件”，重新提交正文并上传最新 `.md` 附件。
+- **禅道正文出现本地原型路径**：把路径替换为“查看禅道附件 <原型文件名>.html”，重新提交正文并上传最新 `.md` 与配套 `.html/.htm` 附件。
 - **需求已激活后编辑页没有文件控件**：使用“变更”页上传附件。
+- **HTML 原型被压缩成 ZIP**：这是错误提交方式；删除错误 ZIP 附件，直接上传 `.html/.htm` 原文件，并把正文引用改成“查看禅道附件 <原型文件名>.html”。
 - **版本名称像日期或版本号**：优先匹配执行/迭代，不要误填到过期产品计划。
 
 - 已验证：当前禅道正文会清洗 `data:image/png;base64`，因此不能通过 base64 内嵌来规避图片附件；只要正文要显示图片，就需要图片存在于禅道可访问文件中（通常会出现在附件列表）。
